@@ -1,0 +1,38 @@
+---
+- name: Create Docker containers
+  hosts: localhost
+
+  vars:
+    network: hive-network
+    metrics_image_name: flask-metrics
+    haproxy_image_name: docker-challenge-solved-mohit-arora
+
+  tasks:
+  - name: Create docker network
+    ansible.builtin.command: 
+      cmd: docker network create "{{ network }}"
+  
+  - name: Create docker image
+    ansible.builtin.command: 
+      cmd: docker build -t "{{ metrics_image_name }}" .
+  
+  - name: Create first docker container
+    ansible.builtin.command: 
+      cmd: docker run -d -p 80:80 --name haproxy --network "{{ network }}" "{{ haproxy_image_name }}"
+  
+  - name: Create second docker container
+    ansible.builtin.command: 
+      cmd: docker run -d -p 5000:5000 --name flask_app --network "{{ network }}" "{{ metrics_image_name }}"
+  
+  - name: Wait for 10 sec
+    ansible.builtin.command: 
+      cmd: sleep 10
+  
+  - name: Check connectivity
+    ansible.builtin.command: 
+      cmd: docker exec haproxy curl -s flask_app:5000/metrics
+    register: curl_output
+
+  - name: Print curl output
+    ansible.builtin.debug:
+      msg: "{{ curl_output.stdout_lines }}"

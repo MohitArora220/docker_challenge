@@ -1,0 +1,18 @@
+services:
+  haproxy:
+    image: docker-challenge-solved-mohit-arora
+    container_name: haproxy
+    networks:
+      - hive-network
+    ports:
+      - "80:80"
+  flask_app:
+    build: .
+    container_name: flask_app
+    networks:
+      - hive-network
+    ports:
+      - "5000:5000"
+networks:
+  hive-network:
+    name: hive-network
